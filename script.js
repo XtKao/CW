@@ -7,10 +7,9 @@ const submitBtn = document.getElementById('submitBtn');
 const restartBtn = document.getElementById('restartBtn');
 const countSpan = document.getElementById('count');
 
-// เรียกใช้ AI ตัดคำ
 const segmenter = new Intl.Segmenter('th', { granularity: 'word' });
 
-// --- 2. แยกคลังคำกริยา (Action Words) ออกมาเพื่อใช้แจ้งเตือน ---
+// --- 2. คลังคำกริยา (Action Words) -> ทำให้เป็นสีเหลือง ---
 const actionKeywords = new Set([
     "กิน", "ทาน", "ดื่ม", "นอน", "หลับ", "ตื่น", 
     "เดิน", "วิ่ง", "นั่ง", "ยืน", "โดด", "กระโดด", 
@@ -28,56 +27,30 @@ const actionKeywords = new Set([
     "ล้าง", "ซัก", "อาบ", "เช็ด", "ถู", "กวาด"
 ]);
 
-// --- 3. คลังคำรวม (ใช้สำหรับเช็คว่า "ซ้ำ" หรือไม่) ---
-// เอาคำกริยามารวมกับคำนามอื่นๆ เพื่อใช้ดักจับคำซ้ำ
+// --- 3. คลังคำรวมทั้งหมด (ใช้เช็คซ้ำ) -> ทำให้เป็นสีแดง ---
 const allKeywords = [
-    ...actionKeywords, // เอากริยาข้างบนมารวมด้วย
-    
-    // หมวดอวัยวะ/ร่างกาย
-    "ใจ", "จิต", "วิญญาณ", "อารมณ์", "นิสัย",
-    "หัว", "หน้า", "ตา", "หู", "จมูก", "ปาก", "ฟัน", "ลิ้น", "คอ", 
-    "แขน", "มือ", "นิ้ว", "เล็บ", "ขา", "เท้า", "เข่า",
-    "ผม", "ขน", "หนัง", "เนื้อ", "เลือด", "กระดูก", "ท้อง", "ไส้", "อก", "เอว", "หลัง",
-    "ตัว", "กาย", "รูป", "ร่าง", "ศพ",
-
-    // หมวดธรรมชาติ
-    "น้ำ", "ไฟ", "ลม", "ดิน", "อากาศ", 
-    "ฟ้า", "เมฆ", "ฝน", "หมอก", "แดด", "รุ้ง",
-    "ดาว", "อาทิตย์", "จันทร์", "ตะวัน", "โลก",
-    "ป่า", "ไม้", "ต้น", "ดอก", "ใบ", "ผล", "ลูก", "ราก",
-    "ภู", "เขา", "ดอย", "ถ้ำ", "หิน", "ทราย", "ทอง", "เงิน", "เพชร",
-    "ทะเล", "หาด", "เกาะ", "แม่น้ำ", "คลอง", "บึง", "สระ",
-
-    // หมวดคน/สถานที่/สิ่งของ
-    "คน", "มนุษย์", "ผู้", "ชาว", "นัก", "ช่าง", "หมอ", "ครู", "พระ",
-    "พ่อ", "แม่", "ปู่", "ย่า", "ตา", "ยาย", "ลุง", "ป้า", "น้า", "อา", "ลูก", "หลาน", "พี่", "น้อง", "เพื่อน", "แฟน",
-    "บ้าน", "เรือน", "หอ", "ตึก", "อาคาร", "โรง", "ร้าน", "ห้าง", "ตลาด", "วัด", "ห้อง",
-    "ทาง", "ถนน", "ซอย", "เมือง", "กรุง", "ประเทศ", "จังหวัด", "ไทย", "จีน", "ลาว", "พม่า",
-    "รถ", "เรือ", "เครื่อง", "ยา", "อาหาร", "ข้าว", "ผ้า", "เสื้อ", "กางเกง", "รองเท้า",
-    "โต๊ะ", "เก้าอี้", "ตู้", "เตียง", "กระดาษ", "สมุด", "หนังสือ", "ปากกา",
-    "สี", "ภาพ", "รูป", "เสียง", "กลิ่น",
-    "การ", "ความ", "ภัย", "งาน", "เรื่อง", "สิ่ง", "วัน", "คืน", "ปี", "เวลา"
+    ...actionKeywords, 
+    "ใจ", "จิต", "วิญญาณ", "อารมณ์", "นิสัย", "หัว", "หน้า", "ตา", "หู", "จมูก", "ปาก", "ฟัน", "ลิ้น", "คอ", 
+    "แขน", "มือ", "นิ้ว", "เล็บ", "ขา", "เท้า", "เข่า", "ผม", "ขน", "หนัง", "เนื้อ", "เลือด", "กระดูก", "ท้อง", "ไส้", "อก", "เอว", "หลัง",
+    "ตัว", "กาย", "รูป", "ร่าง", "ศพ", "น้ำ", "ไฟ", "ลม", "ดิน", "อากาศ", "ฟ้า", "เมฆ", "ฝน", "หมอก", "แดด", "รุ้ง",
+    "ดาว", "อาทิตย์", "จันทร์", "ตะวัน", "โลก", "ป่า", "ไม้", "ต้น", "ดอก", "ใบ", "ผล", "ลูก", "ราก",
+    "ภู", "เขา", "ดอย", "ถ้ำ", "หิน", "ทราย", "ทอง", "เงิน", "เพชร", "ทะเล", "หาด", "เกาะ", "แม่น้ำ", "คลอง", "บึง", "สระ",
+    "คน", "มนุษย์", "ผู้", "ชาว", "นัก", "ช่าง", "หมอ", "ครู", "พระ", "พ่อ", "แม่", "ปู่", "ย่า", "ตา", "ยาย", "ลุง", "ป้า", "น้า", "อา", "ลูก", "หลาน", "พี่", "น้อง", "เพื่อน", "แฟน",
+    "บ้าน", "เรือน", "หอ", "ตึก", "อาคาร", "โรง", "ร้าน", "ห้าง", "ตลาด", "วัด", "ห้อง", "ทาง", "ถนน", "ซอย", "เมือง", "กรุง", "ประเทศ", "จังหวัด", "ไทย", "จีน", "ลาว", "พม่า",
+    "รถ", "เรือ", "เครื่อง", "ยา", "อาหาร", "ข้าว", "ผ้า", "เสื้อ", "กางเกง", "รองเท้า", "โต๊ะ", "เก้าอี้", "ตู้", "เตียง", "กระดาษ", "สมุด", "หนังสือ", "ปากกา",
+    "สี", "ภาพ", "รูป", "เสียง", "กลิ่น", "การ", "ความ", "ภัย", "งาน", "เรื่อง", "สิ่ง", "วัน", "คืน", "ปี", "เวลา"
 ];
 
 // --- 4. ฟังก์ชันแยกส่วนประกอบคำ ---
 function getWordParts(text) {
     let parts = new Set(); 
-
-    // วิธีที่ 1: สแกนหาคำจากคลังรวม
     for (let keyword of allKeywords) {
-        if (text.includes(keyword)) {
-            parts.add(keyword);
-        }
+        if (text.includes(keyword)) parts.add(keyword);
     }
-
-    // วิธีที่ 2: AI ช่วยตัด
     const segments = segmenter.segment(text);
     for (const segment of segments) {
-        if (segment.isWordLike) {
-            parts.add(segment.segment); 
-        }
+        if (segment.isWordLike) parts.add(segment.segment); 
     }
-    
     return Array.from(parts);
 }
 
@@ -88,25 +61,27 @@ function submitWord() {
 
     const newWordParts = getWordParts(rawWord);
 
-    // --- ตรวจสอบการซ้ำ (Duplicate Check) ---
+    // --- STEP 1: เช็คซ้ำ (สีแดง) ---
     for (let oldWord of usedWords) {
+        // 1.1 ซ้ำแบบสิงร่าง
         if (rawWord.includes(oldWord) || oldWord.includes(rawWord)) {
-            announceLoss(`แพ้! "${rawWord}" ซ้ำกับ "${oldWord}"\n(คำนึงซ่อนอยู่ในอีกคำนึง)`);
+            announceLoss(`แพ้! สีแดง: "${rawWord}" ซ้ำกับ "${oldWord}" (คำซ้อนทับกัน)`);
             return;
         }
 
+        // 1.2 ซ้ำแบบมีรากศัพท์เหมือนกัน
         const oldWordParts = getWordParts(oldWord);
         for (let newPart of newWordParts) {
             if (newPart.length < 2 && !allKeywords.includes(newPart)) continue; 
 
             if (oldWordParts.includes(newPart)) {
-                announceLoss(`แพ้! "${rawWord}" ซ้ำกับ "${oldWord}"\n(เพราะมีคำว่า "${newPart}" เหมือนกัน)`);
+                announceLoss(`แพ้! สีแดง: "${rawWord}" ซ้ำกับ "${oldWord}" (มีคำว่า "${newPart}" เหมือนกัน)`);
                 return;
             }
         }
     }
 
-    // --- ตรวจสอบว่าเป็นคำกริยาหรือไม่ (Verb Warning) ---
+    // --- STEP 2: เช็คกริยา (สีเหลือง) ---
     let containsVerb = false;
     let verbFound = "";
 
@@ -118,11 +93,13 @@ function submitWord() {
         }
     }
 
-    // ถ้าไม่ซ้ำ -> บันทึกคำ (พร้อมเลือกสีแจ้งเตือน)
+    // --- STEP 3: แสดงผล ---
     if (containsVerb) {
-        addWord(rawWord, "verb-warn", verbFound); // แจ้งเตือนว่ามีกริยา
+        // สีเหลือง: ไม่ซ้ำ แต่มีกริยา
+        addWord(rawWord, "warning", verbFound); 
     } else {
-        addWord(rawWord, "safe", null); // ปลอดภัย
+        // สีเขียว: ไม่ซ้ำ และปลอดภัย
+        addWord(rawWord, "success", null); 
     }
 }
 
@@ -133,11 +110,11 @@ function addWord(word, type, verbInfo) {
     li.innerHTML = `<div>${word}</div> <span class="index">#${usedWords.length}</span>`;
     wordList.insertBefore(li, wordList.firstChild);
     
-    // แยกข้อความแจ้งเตือนตามประเภท
-    if (type === "verb-warn") {
-        updateStatus(`"${word}" ผ่าน! (ไม่ซ้ำ)\n⚠️ แต่ระวัง! มีคำกริยาว่า "${verbInfo}" ผสมอยู่`, "warning");
+    // ตั้งค่าข้อความและสีตามสถานะ
+    if (type === "warning") {
+        updateStatus(`"${word}" ผ่าน! (สีเหลือง)\n⚠️ มีคำกริยาว่า "${verbInfo}" ผสมอยู่`, "warning");
     } else {
-        updateStatus(`"${word}" ผ่าน! (ไม่ซ้ำและดูปลอดภัย)`, "success");
+        updateStatus(`"${word}" ผ่านฉลุย! (สีเขียว)`, "success");
     }
     
     countSpan.innerText = usedWords.length;
@@ -146,7 +123,8 @@ function addWord(word, type, verbInfo) {
 }
 
 function announceLoss(msg) {
-    updateStatus(msg + " -> คัดออก!", "error");
+    // สีแดง
+    updateStatus(msg, "error");
     
     wordInput.value = '';
     wordInput.focus();
@@ -159,19 +137,8 @@ function announceLoss(msg) {
 function updateStatus(msg, type) {
     statusBox.style.display = 'block';
     
-    // เปลี่ยนสีตามประเภท
-    if (type === "success") {
-        statusBox.className = `status-box status-success`; // สีเขียว
-    } else if (type === "warning") {
-        // เพิ่มสไตล์สีส้มสำหรับ Warning
-        statusBox.className = `status-box status-warning`; // สีเหลือง/ส้ม
-        statusBox.style.backgroundColor = "#fff3cd";
-        statusBox.style.color = "#856404";
-        statusBox.style.border = "1px solid #ffeeba";
-    } else {
-        statusBox.className = `status-box status-error`; // สีแดง
-    }
-    
+    // ล้าง class เก่า ใส่ class ใหม่ตามสี
+    statusBox.className = `status-box status-${type}`;
     statusBox.innerText = msg;
 }
 
