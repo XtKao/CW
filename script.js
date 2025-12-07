@@ -112,7 +112,7 @@ function addWord(word, type, verbInfo) {
     
     // ตั้งค่าข้อความและสีตามสถานะ
     if (type === "warning") {
-        updateStatus(`"${word}" ผ่าน! \n⚠️ มีคำกริยาว่า "${verbInfo}" ผสมอยู่`, "warning");
+        updateStatus(`"${word}" ผ่าน! \n⚠️ อาจมีคำกริยาว่า "${verbInfo}" ผสมอยู่โปรดตรวจสอบดูอีกครั้ง`, "warning");
     } else {
         updateStatus(`"${word}" ผ่านฉลุย! `, "success");
     }
