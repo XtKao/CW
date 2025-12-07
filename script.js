@@ -65,7 +65,7 @@ function submitWord() {
     for (let oldWord of usedWords) {
         // 1.1 ซ้ำแบบสิงร่าง
         if (rawWord.includes(oldWord) || oldWord.includes(rawWord)) {
-            announceLoss(`แพ้! สีแดง: "${rawWord}" ซ้ำกับ "${oldWord}" (คำซ้อนทับกัน)`);
+            announceLoss(`แพ้! : "${rawWord}" ซ้ำกับ "${oldWord}" (คำซ้อนทับกัน)`);
             return;
         }
 
@@ -75,7 +75,7 @@ function submitWord() {
             if (newPart.length < 2 && !allKeywords.includes(newPart)) continue; 
 
             if (oldWordParts.includes(newPart)) {
-                announceLoss(`แพ้! สีแดง: "${rawWord}" ซ้ำกับ "${oldWord}" (มีคำว่า "${newPart}" เหมือนกัน)`);
+                announceLoss(`แพ้! : "${rawWord}" ซ้ำกับ "${oldWord}" (มีคำว่า "${newPart}" เหมือนกัน)`);
                 return;
             }
         }
@@ -112,9 +112,9 @@ function addWord(word, type, verbInfo) {
     
     // ตั้งค่าข้อความและสีตามสถานะ
     if (type === "warning") {
-        updateStatus(`"${word}" ผ่าน! (สีเหลือง)\n⚠️ มีคำกริยาว่า "${verbInfo}" ผสมอยู่`, "warning");
+        updateStatus(`"${word}" ผ่าน! \n⚠️ มีคำกริยาว่า "${verbInfo}" ผสมอยู่`, "warning");
     } else {
-        updateStatus(`"${word}" ผ่านฉลุย! (สีเขียว)`, "success");
+        updateStatus(`"${word}" ผ่านฉลุย! `, "success");
     }
     
     countSpan.innerText = usedWords.length;
